@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    image: comparison:0.0.1-SNAPSHOT
+    container_name: comparison-app
+    ports:
+      - "9999:9999"
+    environment:
+      SPRING_CASSANDRA_CONTACT_POINTS: 213.35.104.216
+      SPRING_CASSANDRA_PORT: 9042
