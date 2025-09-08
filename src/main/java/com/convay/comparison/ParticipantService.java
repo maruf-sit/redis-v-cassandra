@@ -1,4 +1,4 @@
-package com.convay.comparison.service;
+package com.convay.comparison;
 
 import java.time.Duration;
 import java.time.ZoneOffset;
@@ -11,10 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.convay.comparison.model.ParticipantDTO;
-import com.convay.comparison.model.ParticipantRedis;
-import com.convay.comparison.repository.ParticipantRedisRepository;
-import com.convay.comparison.repository.ParticipantRedisRepository.RegistrationDataDTO;
+import com.convay.comparison.ParticipantRepository.RegistrationDataDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,18 +19,18 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class ParticipantRedisService {
+public class ParticipantService {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    private final ParticipantRedisRepository redisRepository;
+    private final ParticipantRepository redisRepository;
 
     private static final String SORTED_SET_PREFIX = "room:participants:sorted:";
     private static final String COUNT_KEY_PREFIX = "room:participants:count:";
 
     @Transactional
     public void addParticipant(ParticipantDTO dto) {
-        ParticipantRedis participant = new ParticipantRedis(dto.roomId(), UUID.randomUUID(), dto.name(), dto.backend());
+        Participant participant = new Participant(dto.roomId(), UUID.randomUUID(), dto.name(), dto.backend());
 
         try {
             redisRepository.save(participant);
@@ -91,7 +88,7 @@ public class ParticipantRedisService {
             }
 
             // Batch fetch participants
-            List<ParticipantRedis> participants = batchFetchParticipants(recentIds);
+            List<Participant> participants = batchFetchParticipants(recentIds);
 
             return new RegistrationDataDTO(participants, totalCount);
 
@@ -101,12 +98,12 @@ public class ParticipantRedisService {
         }
     }
 
-    private List<ParticipantRedis> batchFetchParticipants(Set<Object> participantIds) {
+    private List<Participant> batchFetchParticipants(Set<Object> participantIds) {
         List<String> ids = participantIds.stream()
                 .map(Object::toString)
                 .toList();
 
-        return (List<ParticipantRedis>) redisRepository.findAllById(ids);
+        return (List<Participant>) redisRepository.findAllById(ids);
     }
 
     private RegistrationDataDTO fallbackGetParticipants(String roomId) {

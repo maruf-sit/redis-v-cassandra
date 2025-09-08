@@ -5,5 +5,14 @@ spring:
   application:
     name: redis-v-cassandra
 
-  profiles:
-    active: redis
+  data:
+        redis:
+            host: ${REDIS_HOST:213.35.104.216}
+            port: ${REDIS_PORT:6379}
+            timeout: 2000ms
+            lettuce:
+                pool:
+                    max-active: 32
+                    max-idle: 16
+                    min-idle: 8
+                    max-wait: 3000ms

@@ -1,4 +1,4 @@
-package com.convay.comparison.config;
+package com.convay.comparison;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

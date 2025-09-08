@@ -1,4 +1,4 @@
-package com.convay.comparison.model;
+package com.convay.comparison;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ParticipantRedis {
+public class Participant {
 
     @Id
     private String id; // Format: roomId:participantId
@@ -31,7 +31,7 @@ public class ParticipantRedis {
 
     private String connectedBackendName;
 
-    public ParticipantRedis(String roomId, UUID participantId, String name, String connectedBackendName) {
+    public Participant(String roomId, UUID participantId, String name, String connectedBackendName) {
         this.id = roomId + ":" + participantId.toString();
         this.roomId = roomId;
         this.participantId = participantId;
