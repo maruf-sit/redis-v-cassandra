@@ -5,5 +5,9 @@ spring:
   application:
     name: redis-v-cassandra
 
-  profiles:
-    active: redis
+  cassandra:
+      contact-points: ${SPRING_CASSANDRA_CONTACT_POINTS:213.35.104.216}
+      port: ${SPRING_CASSANDRA_PORT:9042}
+      local-datacenter: ${SPRING_CASSANDRA_LOCAL_DATACENTER:datacenter1}
+      schema-action: ${SPRING_CASSANDRA_SCHEMA_ACTION:CREATE_IF_NOT_EXISTS}
+      keyspace-name: ${SPRING_CASSANDRA_KEYSPACE_NAME:test_keyspace}

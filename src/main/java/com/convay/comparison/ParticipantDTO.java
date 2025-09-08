@@ -1,4 +1,4 @@
-package com.convay.comparison.model;
+package com.convay.comparison;
 
 public record ParticipantDTO(String roomId, String name, String backend) {
 }
