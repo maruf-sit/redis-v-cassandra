@@ -16,10 +16,10 @@ public class ParticipantController {
     private final ParticipantService redisService;
     
     @PostMapping("/add")
-    public ResponseEntity<Boolean> addParticipant(@RequestBody ParticipantDTO dto) {
+    public ResponseEntity<RegistrationResponse> addParticipant(@RequestBody ParticipantDTO dto) {
         try {
-            redisService.addParticipant(dto);
-            return ResponseEntity.ok().build();
+            RegistrationResponse response = redisService.addParticipant(dto);
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

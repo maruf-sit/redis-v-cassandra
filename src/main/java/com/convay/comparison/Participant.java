@@ -29,15 +29,12 @@ public class Participant {
 
     private boolean isHost;
 
-    private String connectedBackendName;
-
-    public Participant(String roomId, UUID participantId, String name, String connectedBackendName) {
+    public Participant(String roomId, UUID participantId, String name) {
         this.id = roomId + ":" + participantId.toString();
         this.roomId = roomId;
         this.participantId = participantId;
         this.name = name;
         this.joinedAt = LocalDateTime.now();
         this.isHost = false;
-        this.connectedBackendName = connectedBackendName;
     }
 }

@@ -11,12 +11,15 @@ public interface ParticipantRepository extends CrudRepository<Participant, Strin
 
     List<Participant> findByRoomId(String roomId);
 
-    public record RegistrationDataDTO(List<Participant> participants, long totalCount) {
-    }
-
-    default RegistrationDataDTO getRecentParticipantsData(String roomId) {
+    default RegistrationResponse getRecentParticipantsData(String roomId) {
         List<Participant> participants = findByRoomId(roomId);
-        return new RegistrationDataDTO(participants.stream().limit(100).toList(), participants.size());
+
+        long totalCount = participants.size();
+        List<ParticipantInfo> participantInfoList = participants.stream()
+                .map(p -> new ParticipantInfo(p.getParticipantId().toString(), p.getName(), p.isHost(), p.getJoinedAt()))
+                .toList();
+    
+        return new RegistrationResponse(participantInfoList, totalCount);
     }
 
     default List<Participant> findRecentParticipantsByRoomId(String roomId) {

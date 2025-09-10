@@ -1,7 +1,6 @@
 package com.convay.comparison;
 
 import java.time.Duration;
-import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -10,8 +9,6 @@ import java.util.UUID;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.convay.comparison.ParticipantRepository.RegistrationDataDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,17 +24,19 @@ public class ParticipantService {
 
     private static final String SORTED_SET_PREFIX = "room:participants:sorted:";
     private static final String COUNT_KEY_PREFIX = "room:participants:count:";
+    private static final double MAX_SCORE = 12000;
 
     @Transactional
-    public void addParticipant(ParticipantDTO dto) {
-        Participant participant = new Participant(dto.roomId(), UUID.randomUUID(), dto.name(), dto.backend());
+    public RegistrationResponse addParticipant(ParticipantDTO dto) {
 
         try {
+            Participant participant = new Participant(dto.roomId(), UUID.randomUUID(), dto.name());
+
             redisRepository.save(participant);
 
             // Add to sorted set for efficient querying
             String sortedSetKey = SORTED_SET_PREFIX + participant.getRoomId();
-            double score = participant.getJoinedAt().toEpochSecond(ZoneOffset.UTC);
+            double score = (Math.random() * MAX_SCORE);
 
             redisTemplate.opsForZSet().add(sortedSetKey, participant.getId(), score);
 
@@ -46,10 +45,13 @@ public class ParticipantService {
             redisTemplate.opsForValue().increment(countKey);
 
             // Set TTL for cleanup
-            redisTemplate.expire(sortedSetKey, Duration.ofHours(12));
-            redisTemplate.expire(countKey, Duration.ofHours(12));
+            redisTemplate.expire(sortedSetKey, Duration.ofHours(6));
+            redisTemplate.expire(countKey, Duration.ofHours(6));
+
+            return fetch100ParticipantsByRoomId(dto.roomId());
         } catch (Exception e) {
-            log.error("Error adding participant: {}", participant.getId(), e);
+            log.error("Error adding participant: {}", e);
+            return new RegistrationResponse(Collections.emptyList(), 0L);
         }
     }
 
@@ -71,7 +73,7 @@ public class ParticipantService {
         }
     }
 
-    public RegistrationDataDTO getRecentParticipantsData(String roomId) {
+    private RegistrationResponse fetch100ParticipantsByRoomId(String roomId) {
         try {
             // Get count efficiently
             String countKey = COUNT_KEY_PREFIX + roomId;
@@ -84,13 +86,17 @@ public class ParticipantService {
                     .reverseRange(sortedSetKey, 0, 99);
 
             if (recentIds == null || recentIds.isEmpty()) {
-                return new RegistrationDataDTO(Collections.emptyList(), totalCount);
+                return new RegistrationResponse(Collections.emptyList(), totalCount);
             }
 
             // Batch fetch participants
             List<Participant> participants = batchFetchParticipants(recentIds);
 
-            return new RegistrationDataDTO(participants, totalCount);
+            List<ParticipantInfo> participantInfoList = participants.stream()
+                    .map(p -> new ParticipantInfo(p.getParticipantId().toString(), p.getName(), p.isHost(), p.getJoinedAt()))
+                    .toList();
+
+            return new RegistrationResponse(participantInfoList, totalCount);
 
         } catch (Exception e) {
             log.error("Error fetching recent participants for room: {}", roomId, e);
@@ -106,7 +112,7 @@ public class ParticipantService {
         return (List<Participant>) redisRepository.findAllById(ids);
     }
 
-    private RegistrationDataDTO fallbackGetParticipants(String roomId) {
+    private RegistrationResponse fallbackGetParticipants(String roomId) {
         log.warn("Using fallback method for room: {}", roomId);
         return redisRepository.getRecentParticipantsData(roomId);
     }
