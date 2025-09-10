@@ -12,7 +12,7 @@ import java.util.List;
 public interface ParticipantRepository extends CassandraRepository<Participant, UUID> {
     
     @Query("SELECT * FROM participants WHERE room_id = :roomId LIMIT 100")
-    List<Participant> findByRoomId(@Param("roomId") String roomId);
+    List<Participant> fetch100ParticipantsByRoomId(@Param("roomId") String roomId);
 
     @Query("SELECT COUNT(*) FROM participants WHERE room_id = :roomId")
     Long countByRoomId(@Param("roomId") String roomId);

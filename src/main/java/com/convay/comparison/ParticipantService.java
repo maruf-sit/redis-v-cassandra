@@ -1,5 +1,6 @@
 package com.convay.comparison;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -16,10 +17,23 @@ public class ParticipantService {
     private final ParticipantRepository participantRepository;
 
     @Transactional
-    public void addParticipant(ParticipantDTO dto) {
-        Participant participant = new Participant(dto.roomId(), UUID.randomUUID(), dto.name());
+    public RegistrationResponse addParticipant(ParticipantDTO dto) {
+        try {
+            Participant participant = new Participant(dto.roomId(), UUID.randomUUID(), dto.name());
 
-        participantRepository.save(participant);
+            participantRepository.save(participant);
+
+            List<Participant> participants = participantRepository.fetch100ParticipantsByRoomId(dto.roomId());
+            long totalCount = participantRepository.countByRoomId(dto.roomId());
+
+            List<ParticipantInfo> participantInfoList = participants.stream()
+                .map(p -> new ParticipantInfo(p.getParticipantId().toString(), p.getName(), p.getIsHost(), p.getJoinedAt()))
+                .toList();
+    
+            return new RegistrationResponse(participantInfoList, totalCount);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid room ID");
+        }
     }
 
 }

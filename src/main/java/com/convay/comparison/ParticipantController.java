@@ -18,10 +18,10 @@ public class ParticipantController {
     private final ParticipantService cassandraService;
     
     @PostMapping("/add")
-    public ResponseEntity<Boolean> addParticipant(@RequestBody ParticipantDTO dto) {
+    public ResponseEntity<RegistrationResponse> addParticipant(@RequestBody ParticipantDTO dto) {
         try {
-            cassandraService.addParticipant(dto);
-            return ResponseEntity.ok().build();
+            RegistrationResponse response = cassandraService.addParticipant(dto);
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             log.error("Error saving participant", e);
             return ResponseEntity.internalServerError().build();
