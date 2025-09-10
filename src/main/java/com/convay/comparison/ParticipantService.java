@@ -17,7 +17,7 @@ public class ParticipantService {
 
     @Transactional
     public void addParticipant(ParticipantDTO dto) {
-        Participant participant = new Participant(dto.roomId(), UUID.randomUUID(), dto.name(), dto.backend());
+        Participant participant = new Participant(dto.roomId(), UUID.randomUUID(), dto.name());
 
         participantRepository.save(participant);
     }
